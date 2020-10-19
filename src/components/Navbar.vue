@@ -106,7 +106,7 @@
 
         <b-modal v-model="showForm" has-modal-card scroll="keep">
             <Signup v-if="formChoiche === 's'" />
-            <Login v-else-if="formChoiche === 'l'" />
+            <Login v-else-if="formChoiche === 'l'" @login="handleLogin"/>
             <img
                 v-else
                 src="https://www.searchenginewatch.com/wp-content/uploads/2018/10/google-bot-404-error-370x229.png"
@@ -131,16 +131,25 @@ export default defineComponent({
     setup() {
         // DESIGN BOOLEANS
         const isLoggedIn = ref(false);
-        const isAdmin = ref(true);
+        const isAdmin = ref(false);
         // FORM CONTROLS
         const showForm = ref(false);
         const formChoiche = ref(String); // 's' for Signup, 'l' for Login
 
+        function handleLogin(admin?: boolean) {
+            isLoggedIn.value = true;
+            if (admin) {
+                isAdmin.value = true;
+            }
+            showForm.value = false;
+        }
+
 
         return {
-            // DESIGN BOOLEANS
+            // UI CONTROLLS
             isLoggedIn,
             isAdmin,
+            handleLogin,
             // FORM CONTROLS
             showForm,
             formChoiche,
