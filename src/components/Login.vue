@@ -2,12 +2,14 @@ TODO: login error in modal header
 TODO: actual login logic
 <template>
     <div class="modal-card">
-        <div class="modal-card-body">
+        <div v-if="!loginValid" class="modal-card-head">
+            <p class="modal-card-title has-text-danger is-center">
+                {{ loginError }}
+            </p>
+        </div>
+        <div class="modal-card-body" @keypress.enter="validateForm">
             <!-- EMAIL -->
-            <b-field
-                label="Email"
-                :type="{ 'is-danger': !emailValid || !loginValid }"
-            >
+            <b-field label="Email" :type="{ 'is-danger': !emailValid }">
                 <!-- This is needed to override the field default message inherited
                 from the html input, so that we have complete controll over when and how
                 error messages are displayed-->
@@ -24,10 +26,7 @@ TODO: actual login logic
             </b-field>
 
             <!-- PASSWORD -->
-            <b-field
-                label="Password"
-                :type="{ 'is-danger': !passwordValid || !loginValid }"
-            >
+            <b-field label="Password" :type="{ 'is-danger': !passwordValid }">
                 <template v-slot:message>
                     {{ passwordError }}
                 </template>
@@ -59,10 +58,12 @@ TODO: actual login logic
 
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
+import userServices from '@/services/UserServices';
+import { AxiosError } from 'axios';
 
 
 export default defineComponent({
-    setup() {
+    setup(props, { emit }) {
         // LOCAL
         const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9][a-zA-Z0-9-]{1,252}(?:\.[a-zA-Z0-9]{2,})+$/
         // DOM CONTROLL
@@ -124,14 +125,23 @@ export default defineComponent({
 
         async function validateForm(): Promise<void> {
             formValidating.value = true;
+            loginValid.value = true;
+
             // doing like this to avoid short-circuit evaluation in the if below
             const emailOk = validateEmail();
             const passwordOk = validatePassword();
 
             if (emailOk && passwordOk) {
-                console.log('Email and password valid!!');
-                await new Promise(r => setTimeout(r, 2000));
-                alert('You have been logged in... or maybe not!')
+                await userServices.login(user.value).then(response => {
+                    loginValid.value = true;
+                    console.log(`Welcome back, ${response.data.firstName}`);
+                    // FIXME REMOVE HARDCODED ADMIN
+                    emit('login', true);
+                    // emit('close');
+                }).catch((err: AxiosError) => {
+                    loginValid.value = emailValid.value = passwordValid.value = false;
+                    loginError.value = err.response?.data.message
+                });
             }
 
             formValidating.value = false;
