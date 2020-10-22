@@ -1,8 +1,8 @@
 import Api from './Api'
-import { ref } from '@vue/composition-api';
+
 
 export default {
-
+    // TODO: remove me
     echo() {
         console.log(Api)
         const data = {
@@ -13,6 +13,10 @@ export default {
     },
 
     login(body: { email: string, password: string }) {
-        return Api.post('/users/login', body, { withCredentials: true});
+        return Api.post('/users/login', body, { withCredentials: true });
+    },
+
+    checkEmail(email: String) {
+        return Api.post(`/users/checkEmail/${email}`);
     }
 }
