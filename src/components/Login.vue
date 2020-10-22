@@ -1,9 +1,7 @@
-TODO: login error in modal header
-TODO: actual login logic
 <template>
     <div class="modal-card">
-        <div v-if="!loginValid" class="modal-card-head">
-            <p class="modal-card-title has-text-danger is-center">
+        <div v-if="!loginValid" class="modal-card-head has-text-centered">
+            <p class="modal-card-title has-text-danger">
                 {{ loginError }}
             </p>
         </div>
@@ -41,14 +39,14 @@ TODO: actual login logic
             </b-field>
 
             <!-- SUBMIT -->
-            <div class="control">
-                <button
+            <div class="control buttons is-right">
+                <b-button
                     @click="validateForm"
-                    :class="{ 'is-loading': formValidating }"
-                    class="button is-primary"
+                    :type="{ 'is-loading': formValidating }"
+                    class="is-primary"
                 >
                     Login
-                </button>
+                </b-button>
             </div>
         </div>
     </div>
@@ -125,22 +123,21 @@ export default defineComponent({
 
         async function validateForm(): Promise<void> {
             formValidating.value = true;
-            loginValid.value = true;
 
             // doing like this to avoid short-circuit evaluation in the if below
             const emailOk = validateEmail();
             const passwordOk = validatePassword();
 
             if (emailOk && passwordOk) {
-                await userServices.login(user.value).then(response => {
+                await userServices.login(user.value)
+                .then(response => {
                     loginValid.value = true;
-                    console.log(`Welcome back, ${response.data.firstName}`);
-                    // FIXME REMOVE HARDCODED ADMIN
-                    emit('login', true);
-                    // emit('close');
-                }).catch((err: AxiosError) => {
+
+                    emit('successfulLogin', response.data.isAdmin);
+                })
+                .catch((error: AxiosError) => {
                     loginValid.value = emailValid.value = passwordValid.value = false;
-                    loginError.value = err.response?.data.message
+                    loginError.value = error.response?.data.message
                 });
             }
 
