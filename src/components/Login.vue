@@ -1,11 +1,15 @@
 <template>
     <div class="modal-card">
-        <div v-if="!loginValid" class="modal-card-head has-text-centered">
-            <p class="modal-card-title has-text-danger">
-                {{ loginError }}
-            </p>
-        </div>
+        <header class="modal-card-head has-text-centered">
+            <p class="modal-card-title"> Log In </p>
+            <button type="button" class="delete" @click="$parent.close()" />
+        </header>
         <div class="modal-card-body" @keypress.enter="validateForm">
+            <div v-if="!loginValid" class="has-text-centered mb-3">
+                <p class="modal-card-title has-text-danger">
+                    {{ loginError }}
+                </p>
+            </div>
             <!-- EMAIL -->
             <b-field label="Email" :type="{ 'is-danger': !emailValid }">
                 <!-- This is needed to override the field default message inherited
@@ -43,7 +47,7 @@
                 <b-button
                     @click="validateForm"
                     :type="{ 'is-loading': formValidating }"
-                    class="is-primary"
+                    class="is-primary mt-4"
                 >
                     Login
                 </b-button>
@@ -130,15 +134,15 @@ export default defineComponent({
 
             if (emailOk && passwordOk) {
                 await userServices.login(user.value)
-                .then(response => {
-                    loginValid.value = true;
+                    .then(response => {
+                        loginValid.value = true;
 
-                    emit('successfulLogin', response.data.isAdmin);
-                })
-                .catch((error: AxiosError) => {
-                    loginValid.value = emailValid.value = passwordValid.value = false;
-                    loginError.value = error.response?.data.message
-                });
+                        emit('successfulLogin', response.data.isAdmin);
+                    })
+                    .catch((error: AxiosError) => {
+                        loginValid.value = emailValid.value = passwordValid.value = false;
+                        loginError.value = error.response?.data.message
+                    });
             }
 
             formValidating.value = false;
