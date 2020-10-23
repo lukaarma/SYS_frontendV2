@@ -5,7 +5,8 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "css-watch": "sass.bat ./src/css/styles.scss ./src/css/styles.css --style compressed --watch --no-source-map"
   },
   "dependencies": {
     "@mdi/font": "^5.7.55",
