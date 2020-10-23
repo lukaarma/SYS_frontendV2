@@ -1,5 +1,9 @@
 <template>
     <div class="modal-card">
+        <header class="modal-card-head has-text-centered">
+            <p class="modal-card-title"> Sign Up </p>
+            <button type="button" class="delete" @click="$parent.close()" />
+        </header>
         <div class="modal-card-body">
             <b-steps
                 v-model="activeFormStep"
@@ -8,11 +12,7 @@
                 mobile-mode="compact"
                 :has-navigation="false"
             >
-                <Step1 @goNext="activeFormStep++"/>
-                <b-step-item step="3" label="test">
-                    <h1 class="title has-text-centered">Account</h1>
-                    Lorem ipsum dolor sit amet.
-                </b-step-item>
+                <Step1 @goNext="activeFormStep++" />
                 <Step2 />
             </b-steps>
         </div>
@@ -33,7 +33,7 @@ export default defineComponent({
     },
     setup() {
         // steps variables
-        const activeFormStep = ref(0);
+        const activeFormStep = ref(1); //TODO set to 0
 
         return {
             // step form varibales
