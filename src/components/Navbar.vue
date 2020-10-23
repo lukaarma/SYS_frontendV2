@@ -133,9 +133,17 @@
             </template>
         </b-navbar>
 
-        <b-modal v-model="showForm" has-modal-card scroll="keep">
+        <b-modal
+            v-model="showForm"
+            has-modal-card
+            :destroy-on-hide="false"
+            scroll="keep"
+        >
             <Signup v-if="formChoiche === 's'" />
-            <Login v-else-if="formChoiche === 'l'" @successfulLogin="handleLogin"/>
+            <Login
+                v-else-if="formChoiche === 'l'"
+                @successfulLogin="handleLogin"
+            />
             <img
                 v-else
                 src="https://www.searchenginewatch.com/wp-content/uploads/2018/10/google-bot-404-error-370x229.png"

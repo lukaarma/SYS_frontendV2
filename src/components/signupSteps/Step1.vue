@@ -73,7 +73,7 @@
                     :disabled="!(emailDone && passwordDone)"
                     :type="{ 'is-loading': stepValidating }"
                     @click="goNextStep"
-                    class="is-primary"
+                    class="is-primary mt-4"
                 >
                     Next
                 </b-button>
