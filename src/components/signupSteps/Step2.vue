@@ -67,12 +67,13 @@
                 {{ phoneNumberValidation.errorMessage }}
             </template>
             <VueTelInput
-                :disabled="disableAll"
                 v-model="user.phoneNumber"
+                :disabled="disableAll"
                 :inputClasses="{
                     'input phoneInput': true,
                     'is-danger': phoneNumberValidation.error,
                 }"
+                mode="international"
                 @validate="phoneChangeState"
                 @input="clearError('phoneNumber')"
                 @blur="validatePhoneNumber"
