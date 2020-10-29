@@ -118,13 +118,13 @@
 
                 <div v-else class="buttons py-2 px-3">
                     <b-button
-                        @click="(formChoiche = 's'), (showForm = true)"
+                        @click="formChoiche = 's'; showForm = true"
                         class="is-primary"
                     >
                         Sign up
                     </b-button>
                     <b-button
-                        @click="(formChoiche = 'l'), (showForm = true)"
+                        @click="formChoiche = 'l'; showForm = true"
                         class="is-light is-rounded"
                     >
                         Log in
@@ -139,7 +139,10 @@
             :destroy-on-hide="false"
             scroll="keep"
         >
-            <Signup v-if="formChoiche === 's'" />
+            <Signup
+                v-if="formChoiche === 's'"
+                @successfulSignup="handleSignup"
+            />
             <Login
                 v-else-if="formChoiche === 'l'"
                 @successfulLogin="handleLogin"
@@ -156,6 +159,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from "@vue/composition-api";
+import { ToastProgrammatic as Toast } from 'buefy'
 import Signup from './Signup.vue';
 import Login from './Login.vue';
 
@@ -171,14 +175,29 @@ export default defineComponent({
         const isAdmin = ref(false);
         // FORM CONTROLS
         const showForm = ref(false);
-        const formChoiche = ref(String); // 's' for Signup, 'l' for Login
+        const formChoiche = ref(''); // 's' for Signup, 'l' for Login
 
         function handleLogin(admin?: boolean) {
             isLoggedIn.value = true;
             if (admin) {
                 isAdmin.value = true;
             }
+            Toast.open({
+                message: 'Login Succesful!',
+                type: 'is-success',
+                position: 'is-top'
+            });
+
             showForm.value = false;
+        }
+
+        function handleSignup() {
+            formChoiche.value = 'l'
+            Toast.open({
+                message: 'Signup Succesful! Now you can login',
+                type: 'is-success',
+                position: 'is-top'
+            });
         }
 
 
@@ -187,6 +206,7 @@ export default defineComponent({
             isLoggedIn,
             isAdmin,
             handleLogin,
+            handleSignup,
             // FORM CONTROLS
             showForm,
             formChoiche,
