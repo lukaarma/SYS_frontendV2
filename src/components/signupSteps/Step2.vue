@@ -1,5 +1,5 @@
 <template>
-    <b-step-item step="2" label="Personal Info">
+    <b-step-item step="2" label="Personal Info" :clickable="false">
         <!-- FIRST NAME -->
         <b-field
             label="First Name"
@@ -46,6 +46,7 @@
             </template>
             <div class="has-text-centered">
                 <b-datepicker
+                    :disabled="disableAll"
                     v-model="user.birthdate"
                     :first-day-of-week="1"
                     :max-date="birthdateValidation.maxDate"
@@ -66,6 +67,7 @@
                 {{ phoneNumberValidation.errorMessage }}
             </template>
             <VueTelInput
+                :disabled="disableAll"
                 v-model="user.phoneNumber"
                 :inputClasses="{
                     'input phoneInput': true,
@@ -94,24 +96,24 @@
 
 
 <script lang="ts">
-import { defineComponent, ref } from '@vue/composition-api';
+import { defineComponent, PropType, ref } from '@vue/composition-api';
 import { VueTelInput } from 'vue-tel-input';
+import { UserProp } from '../Signup.vue';
 
 
 export default defineComponent({
     components: {
         VueTelInput,
     },
+    props: {
+        user: {
+            type: Object as PropType<UserProp>,
+            required: true
+        }
+    },
     setup(props, { emit }) {
         const nameRegex = /^[\p{L}][ \p{L}'-]*[\p{L}]$/u
         const notNameRegex = /[^\p{L} '-]/u
-
-        const user = ref({
-            firstName: '',
-            lastName: '',
-            phoneNumber: '',
-            birthdate: undefined
-        });
 
         const stepValidating = ref(false);
         const disableAll = ref(false);
@@ -141,17 +143,17 @@ export default defineComponent({
 
 
         function validateFirstName(): boolean {
-            if (user.value.firstName && nameRegex.test(user.value.firstName)) {
+            if (props.user.firstName && nameRegex.test(props.user.firstName)) {
                 return true;
             }
-            else if (user.value.firstName && notNameRegex.test(user.value.firstName)) {
+            else if (props.user.firstName && notNameRegex.test(props.user.firstName)) {
                 firstNameValidation.value.errorMessage = 'Illegal character inserted. ' +
                     'Plesae use only lowecase and uppercase letter, space, dash and apostrophe';
             }
-            else if (user.value.firstName.length === 1) {
+            else if (props.user.firstName.length === 1) {
                 firstNameValidation.value.errorMessage = 'The name is too short';
             }
-            else if (!user.value.firstName.length) {
+            else if (!props.user.firstName.length) {
                 firstNameValidation.value.errorMessage = 'Field is required!';
             }
 
@@ -161,17 +163,17 @@ export default defineComponent({
         }
 
         function validateLastName(): boolean {
-            if (user.value.lastName && nameRegex.test(user.value.lastName)) {
+            if (props.user.lastName && nameRegex.test(props.user.lastName)) {
                 return true;
             }
-            else if (user.value.lastName && notNameRegex.test(user.value.lastName)) {
+            else if (props.user.lastName && notNameRegex.test(props.user.lastName)) {
                 lastNameValidation.value.errorMessage = 'Illegal character inserted. ' +
                     'Plesae use only lowecase and uppercase letter, space, dash and apostrophe';
             }
-            else if (user.value.firstName.length === 1) {
+            else if (props.user.firstName.length === 1) {
                 lastNameValidation.value.errorMessage = 'The name is too short';
             }
-            else if (!user.value.lastName.length) {
+            else if (!props.user.lastName.length) {
                 lastNameValidation.value.errorMessage = 'Field is required!';
             }
 
@@ -180,7 +182,9 @@ export default defineComponent({
         }
 
         function validateBirthdate(): boolean {
-            if (user.value.birthdate) {
+            if (props.user.birthdate) {
+                props.user.birthdateValue = props.user.birthdate.toLocaleDateString();
+
                 return true;
             }
             else {
@@ -196,10 +200,10 @@ export default defineComponent({
         }
 
         function validatePhoneNumber(): boolean {
-            if (user.value.phoneNumber && phoneNumberValidation.value.isValid) {
+            if (props.user.phoneNumber && phoneNumberValidation.value.isValid) {
                 return true;
             }
-            else if (user.value.phoneNumber) {
+            else if (props.user.phoneNumber) {
                 phoneNumberValidation.value.errorMessage = 'This is not a valid phone number'
             }
             else {
@@ -242,9 +246,7 @@ export default defineComponent({
             const phoneNumberOk = validatePhoneNumber();
 
             if (firstNameOk && lastNameOk && birthdateOk && phoneNumberOk) {
-                alert('GOGO POWER RANGERS!!');
-                //TODO: handle event on father
-                emit('goNext', user.value.firstName, user.value.lastName, user.value.birthdate, user.value.phoneNumber);
+                emit('goNext', props.user.firstName, props.user.lastName, props.user.birthdate, props.user.phoneNumber);
             }
 
             stepValidating.value = disableAll.value = false;
@@ -252,8 +254,6 @@ export default defineComponent({
 
 
         return {
-            //user info
-            user,
             // validation
             firstNameValidation,
             validateFirstName,

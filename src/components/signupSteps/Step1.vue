@@ -1,6 +1,7 @@
+TODO: remove button disabled
 <template>
     <div>
-        <b-step-item step="1" label="Account Info">
+        <b-step-item step="1" label="Account Info" :clickable="false">
             <!-- EMAIL -->
             <b-field label="Email" :type="{ 'is-danger': emailError }">
                 <template v-slot:message>
@@ -9,10 +10,7 @@
                 <b-input
                     v-model="user.email"
                     :disabled="disableAll"
-                    @input="
-                        clearError('email');
-                        emailDone = false;
-                    "
+                    @input="clearError('email')"
                     @blur="validateEmail()"
                     type="email"
                     placeholder="email@domain.com"
@@ -32,10 +30,10 @@
                     :disabled="disableAll"
                     @input="
                         clearError('password');
-                        passwordDone = false;
                         validatePassword();
                     "
                     type="password"
+                    oncopy="return false"
                     placeholder="password"
                     password-reveal
                 ></b-input>
@@ -58,10 +56,10 @@
                     :disabled="repeatPasswordDisabled || disableAll"
                     @input="
                         clearError('repeatPassword');
-                        passwordDone = false;
                         validateRepeatPassword();
                     "
                     type="password"
+                    oncopy="return false"
                     placeholder="password"
                     password-reveal
                 ></b-input>
@@ -70,7 +68,6 @@
             <!-- NEXT -->
             <div class="buttons is-right">
                 <b-button
-                    :disabled="!(emailDone && passwordDone)"
                     :type="{ 'is-loading': stepValidating }"
                     @click="goNextStep"
                     class="is-primary mt-4"
@@ -84,20 +81,25 @@
 
 
 <script lang="ts">
-import { defineComponent, ref } from '@vue/composition-api';
+import { defineComponent, PropType, ref } from '@vue/composition-api';
 import userServices from '@/services/UserServices';
 import { AxiosError } from 'axios';
+import { UserProp } from '../Signup.vue';
 
 
 export default defineComponent({
+    props: {
+        user: {
+            type: Object as PropType<UserProp>,
+            required: true
+        }
+    },
     setup(props, { emit }) {
         const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9][a-zA-Z0-9-]{1,252}(?:\.[a-zA-Z0-9]{2,})+$/
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])([a-zA-Z\d$@!%*?&]{8,}$)$/
-
         // email
         const emailError = ref(false);
         const emailErrorMessage = ref('');
-        const emailDone = ref(false);
         // password
         const passwordError = ref(false);
         const passwordErrorMessage = ref('');
@@ -107,15 +109,8 @@ export default defineComponent({
         const repeatPasswordDisabled = ref(true);
         const repeatPasswordError = ref(false);
         const repeatPasswordErrorMessage = ref('');
-        const passwordDone = ref(false);
-
         const disableAll = ref(false);
         const stepValidating = ref(false);
-        const user = ref({
-            email: '',
-            password: '',
-            repeatPassword: ''
-        });
 
         function clearError(field: 'email' | 'password' | 'repeatPassword'): void {
             if (field === 'email') {
@@ -137,24 +132,21 @@ export default defineComponent({
         }
 
         async function validateEmail(): Promise<boolean> {
-            if (emailRegex.test(user.value.email)) {
-                return await userServices.checkEmail(user.value.email)
+            if (emailRegex.test(props.user.email)) {
+                return await userServices.checkEmail(props.user.email)
                     .then(() => {
-                        emailError.value = false;
-                        emailDone.value = true;
-
                         return true;
                     })
                     .catch((error: AxiosError) => {
-                        console.log(error.response?.data.error)
+                        console.error(`[SIGNUP STEP 1] signup failed! Err code: 'error.response?.data.error'`);
+                        emailError.value = true;
                         emailErrorMessage.value = error.response?.data.message ?? '';
 
                         return false;
                     });
-
             }
             // do not move the error booleasn outside of each t screws with the sty
-            else if (user.value.email.length) {
+            else if (props.user.email.length) {
                 emailErrorMessage.value = 'This is not a valid email!';
                 emailError.value = true
             }
@@ -167,14 +159,13 @@ export default defineComponent({
         }
 
         function validateRepeatPassword(firts?: boolean): boolean {
-            if (user.value.repeatPassword === user.value.password) {
+            if (props.user.repeatPassword === props.user.password) {
                 // future trigger for step validation
-                passwordDone.value = true;
 
                 return true;
             }
             // do not move the error booleasn outside of each t screws with the style
-            else if (user.value.repeatPassword.length) {
+            else if (props.user.repeatPassword.length) {
                 repeatPasswordErrorMessage.value = "Passwords don't match";
                 repeatPasswordError.value = true;
             }
@@ -187,33 +178,33 @@ export default defineComponent({
         }
 
         function validatePassword(): boolean {
-            if (passwordRegex.test(user.value.password)) {
+            if (passwordRegex.test(props.user.password)) {
                 clearError('password');
                 repeatPasswordDisabled.value = false;
 
                 return validateRepeatPassword(true);
             }
-            else if (user.value.password.length) {
-                const illegalChars = user.value.password.match(/[^a-zA-Z\d$@!%*?&]+/);
+            else if (props.user.password.length) {
+                const illegalChars = props.user.password.match(/[^a-zA-Z\d$@!%*?&]+/);
 
                 if (illegalChars) {
                     passwordErrorMessage.value = 'Illegal character inserted. Plesae use only lowecase and uppercase letter, numbers and $@!%*?&';
                 }
                 else {
                     const message = [];
-                    if (user.value.password.length < 8) {
+                    if (props.user.password.length < 8) {
                         message.push(passwordHelp[0]);
                     }
-                    if (user.value.password.search(/[A-Z]/) === -1) {
+                    if (props.user.password.search(/[A-Z]/) === -1) {
                         message.push(passwordHelp[1]);
                     }
-                    if (user.value.password.search(/[a-z]/) === -1) {
+                    if (props.user.password.search(/[a-z]/) === -1) {
                         message.push(passwordHelp[2]);
                     }
-                    if (user.value.password.search(/\d/) === -1) {
+                    if (props.user.password.search(/\d/) === -1) {
                         message.push(passwordHelp[3]);
                     }
-                    if (user.value.password.search(/[@$!%*?&]/) === -1) {
+                    if (props.user.password.search(/[@$!%*?&]/) === -1) {
                         message.push(passwordHelp[4]);
                     }
 
@@ -237,7 +228,7 @@ export default defineComponent({
             const passwordOk = validatePassword();
 
             if (emailOk && passwordOk) {
-                emit('goNext', user.value.email, user.value.password);
+                emit('goNext', props.user.email, props.user.password);
             }
 
             stepValidating.value = disableAll.value = false;
@@ -245,13 +236,10 @@ export default defineComponent({
 
 
         return {
-            // user info
-            user,
             // email validation
             emailError,
             emailErrorMessage,
             validateEmail,
-            emailDone,
             // password validation
             passwordError,
             passwordErrorMessage,
@@ -262,7 +250,6 @@ export default defineComponent({
             repeatPasswordError,
             repeatPasswordErrorMessage,
             validateRepeatPassword,
-            passwordDone,
             // general
             stepValidating,
             disableAll,
